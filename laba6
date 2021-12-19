@@ -11,13 +11,11 @@ namespace задание
         #region Общие функции
         static void PrintMainMenu()
         {
-            Console.ForegroundColor = ConsoleColor.White;
             Console.WriteLine("--------------------------------");
             Console.WriteLine("1. Работа с двумерными массивами");
             Console.WriteLine("2. Работа со строками");
             Console.WriteLine("3. Выход");
             Console.WriteLine("--------------------------------");
-            Console.ResetColor();
         }
         static int GetInt(string msg, string msgError, int min, int max)
         {
@@ -61,6 +59,7 @@ namespace задание
                 enterString = Console.ReadLine();
                 if (enterString == "")
                 {
+                    isRead = false;
                     Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine("Строка пуста!");
                     Console.ResetColor();
@@ -95,20 +94,31 @@ namespace задание
             } while (!isRead);
             return enterString;
         }
-    
+        static void DoMainMenu()
+        {
+            int check;
+            do
+            {
+                PrintMainMenu();
+                check = GetInt("", "Такой функции не существует", 1, 3);
+                switch (check)
+                {
+                    case 1: DoMenuForTable(); break;
+                    case 2: DoMenuForString(); break;
+                }
+            } while (check < 3);
+        }
         #endregion
 
         #region Двумерные массивы
         static void PrintMenuForTable()
         {
-            Console.ForegroundColor = ConsoleColor.Yellow;
             Console.WriteLine("-------------------------------------------------");
             Console.WriteLine("1. Создать матрицу");
             Console.WriteLine("2. Напечатать матрицу");
             Console.WriteLine("3. Удалить столбец, содержащий минимальный элемент");
             Console.WriteLine("4. Назад");
             Console.WriteLine("-------------------------------------------------");
-            Console.ResetColor();
         }
         static void PrintMenuForMakeArray()
         {
@@ -253,9 +263,7 @@ namespace задание
 
                             else
                             {
-                                Console.ForegroundColor = ConsoleColor.Yellow;
                                 PrintMenuForMakeArray();
-                                Console.ResetColor();
                                 check = GetInt("", "Такой функции не существует", 1, 4);
                                 switch (check)
                                 {
@@ -268,9 +276,7 @@ namespace задание
                         }
                     case 2:
                         {
-                            Console.ForegroundColor = ConsoleColor.Yellow;
                             PrintTable(ref table, ref strings, ref columns);
-                            Console.ResetColor();
                             break;
                         }
                     case 3: table = DeleteColumnOfMin(ref table, ref strings, ref columns); break;
@@ -282,14 +288,12 @@ namespace задание
         #region Строки
         static void PrintMenuForString()
         {
-            Console.ForegroundColor = ConsoleColor.Cyan;
             Console.WriteLine("-----------------------------------------------------");
             Console.WriteLine("1. Создать строку");
             Console.WriteLine("2. Напечатать строку или строковый массив");
             Console.WriteLine("3. Поменять местами первое и последнее слово в строке");
             Console.WriteLine("4. Назад");
             Console.WriteLine("-----------------------------------------------------");
-            Console.ResetColor();
         }
         static void PrintMenuForMakeStrings()
         {
@@ -408,8 +412,10 @@ namespace задание
                 newString = lastWord + middleString + firstWord + workString[workString.Length - 1];
                 workString = newString;
 
-                Console.WriteLine("Получена строка: ");
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.WriteLine("После переставления получена строка: ");
                 Console.WriteLine(workString);
+                Console.ResetColor();
             }
             return workString;
         }
@@ -428,9 +434,7 @@ namespace задание
                 {
                     case 1:
                         {
-                            Console.ForegroundColor = ConsoleColor.Yellow;
                             PrintMenuForMakeStrings();
-                            Console.ResetColor();
                             check = GetInt("", "Такой функции не существует", 1, 3);
                             switch (check)
                             {
@@ -453,9 +457,7 @@ namespace задание
                         }
                     case 2:
                         {
-                            Console.ForegroundColor = ConsoleColor.Yellow;
                             PrintString(ref stringArray);
-                            Console.ResetColor();
                             break;
                         }
                     case 3:
@@ -486,8 +488,7 @@ namespace задание
         #endregion
         static void Main(string[] args)
         {
-            //DoMenuForTable();
-            DoMenuForString();
+            DoMainMenu();
         }
     }
 }
