@@ -1,0 +1,493 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace задание
+{
+    class Program
+    {
+        #region Общие функции
+        static void PrintMainMenu()
+        {
+            Console.ForegroundColor = ConsoleColor.White;
+            Console.WriteLine("--------------------------------");
+            Console.WriteLine("1. Работа с двумерными массивами");
+            Console.WriteLine("2. Работа со строками");
+            Console.WriteLine("3. Выход");
+            Console.WriteLine("--------------------------------");
+            Console.ResetColor();
+        }
+        static int GetInt(string msg, string msgError, int min, int max)
+        {
+            int number;
+            bool isRead;
+            do
+            {
+                Console.Write(msg);
+                isRead = int.TryParse(Console.ReadLine(), out number);
+                if (!isRead)
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("[Ошибка!] Целое число введено неверно");
+                    Console.WriteLine();
+                    Console.ResetColor();
+                }
+                else
+                {
+                    if (number < min || number > max)
+                    {
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine("[Ошибка!] " + msgError);
+                        Console.WriteLine();
+                        isRead = false;
+                        Console.ResetColor();
+                    }
+                }
+            } while (!isRead);
+            return number;
+        }
+        static string GetString(string msg)
+        {
+            string enterString;
+            bool isRead;
+            string sepString = " .!?()@#$%^&*_+-:;'<>,/|[]{}";
+            string sepEnd = ".!?";
+            do
+            {
+                isRead = true;
+                Console.Write(msg);
+                enterString = Console.ReadLine();
+                if (enterString == "")
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("Строка пуста!");
+                    Console.ResetColor();
+                }
+                else
+                {
+                    if (sepString.Contains(enterString[0]))
+                    {
+                        isRead = false;
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine("[Ошибка!] Строка не может начинаться с разделительного знака");
+                        Console.WriteLine();
+                        Console.ResetColor();
+                    }
+                    if (!sepEnd.Contains(enterString[enterString.Length - 1]))
+                    {
+                        isRead = false;
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine("[Ошибка!] Строка может заканчиваться только на '.', '!', '?'");
+                        Console.WriteLine();
+                        Console.ResetColor();
+                    }
+                    if (sepEnd.Contains(enterString[enterString.Length - 1]) && sepString.Contains(enterString[enterString.Length - 2]))
+                    {
+                        isRead = false;
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine("[Ошибка!] Строка не может иметь больше одного специального знака в конце");
+                        Console.WriteLine();
+                        Console.ResetColor();
+                    }
+                }
+            } while (!isRead);
+            return enterString;
+        }
+    
+        #endregion
+
+        #region Двумерные массивы
+        static void PrintMenuForTable()
+        {
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.WriteLine("-------------------------------------------------");
+            Console.WriteLine("1. Создать матрицу");
+            Console.WriteLine("2. Напечатать матрицу");
+            Console.WriteLine("3. Удалить столбец, содержащий минимальный элемент");
+            Console.WriteLine("4. Назад");
+            Console.WriteLine("-------------------------------------------------");
+            Console.ResetColor();
+        }
+        static void PrintMenuForMakeArray()
+        {
+            Console.WriteLine("------------------------");
+            Console.WriteLine("1. Создать вручную");
+            Console.WriteLine("2. Создать с помощью ДСЧ");
+            Console.WriteLine("3. Назад");
+            Console.WriteLine("------------------------");
+        }
+        static int[,] MakeTableConsole(ref int strings, ref int columns)
+        {
+            int[,] table = new int[strings, columns];
+            int i, j;
+            for (i = 0; i < strings; i++)
+            {
+                for (j = 0; j < columns; j++)
+                {
+                    table[i, j] = GetInt("Введите элемент матрицы с индексом [" + (i + 1) + "," + (j + 1) + "]: ", "Слишком большое число", Int32.MinValue, Int32.MaxValue);
+                }
+            }
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine("Матрица успешно создана");
+            Console.ResetColor();
+            return table;
+        }
+        static int[,] MakeTableRandom(ref int strings, ref int columns)
+        {
+            Random rnd = new Random();
+            int[,] table = new int[strings, columns];
+            int i, j;
+            for (i = 0; i < strings; i++)
+            {
+                for (j = 0; j < columns; j++)
+                {
+                    table[i, j] = rnd.Next(-100, 100);
+                }
+            }
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine("Матрица успешно создана");
+            Console.ResetColor();
+            return table;
+        }
+        static bool IsEmpty(ref int[,] table)
+        {
+            if (table == null || table.Length == 0) return true;
+            else return false;
+        }
+        static void PrintTable(ref int[,] table, ref int strings, ref int columns)
+        {
+            int i, j;
+            bool isEmpty = IsEmpty(ref table);
+            if (isEmpty)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("Матрица пуста!");
+                Console.ResetColor();
+            }
+            else
+            {
+                Console.WriteLine("Получена матрица: ");
+                for (i = 0; i < strings; i++)
+                {
+                    for (j = 0; j < columns; j++)
+                    {
+                        Console.Write($"{table[i, j],4}");
+                    }
+                    Console.WriteLine();
+                }
+            }
+        }
+        static int[,] DeleteColumnOfMin(ref int[,] table, ref int strings, ref int columns)
+        {
+            int minElement = Int32.MaxValue;
+            int columnOfMin = -1;
+            int i, j, k = 0;
+            bool isEmpty = IsEmpty(ref table);
+            if (isEmpty)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("Матрица пуста!");
+                Console.ResetColor();
+            }
+            else
+            {
+                int[,] tableAfterDel = new int[strings, columns - 1];
+                for (i = 0; i < strings; i++)
+                {
+                    for (j = 0; j < columns; j++)
+                    {
+                        if (table[i, j] < minElement)
+                        {
+                            minElement = table[i, j];
+                            columnOfMin = j;
+                        }
+                    }
+                }
+                for (i = 0; i < strings; i++)
+                {
+                    for (j = 0; j < columns; j++)
+                    {
+                        if (j != columnOfMin)
+                        {
+                            tableAfterDel[i, k] = table[i, j];
+                            k += 1;
+                        }
+                    }
+                    k = 0;
+                }
+                table = tableAfterDel;
+                columns -= 1;
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.WriteLine("Минимальный элемент массива равен " + minElement + ", он находится в столбце под номером " + (columnOfMin + 1));
+                Console.WriteLine("Столбец, содержащий минимальный элемент, удален");
+                Console.ResetColor();
+            }
+            return table;
+        }
+        static void DoMenuForTable()
+        {
+            int check;
+            int strings = 0, columns = 0;
+            ref int stringsRef = ref strings;
+            ref int columnsRef = ref columns;
+            int[,] table = null;
+            ref int[,] tableRef = ref table;
+            do
+            {
+                PrintMenuForTable();
+                check = GetInt("", "Такой функции не существует", 1, 4);
+                switch (check)
+                {
+                    case 1:
+                        {
+                            strings = GetInt("Введите количество строк в матрице: ", "Создание массива такой длины не предусмотрено", 0, 10);
+                            columns = GetInt("Введите количество столбцов в матрице: ", "Создание массива такой длины не предусмотрено", 0, 10);
+                            if (strings == 0 || columns == 0)
+                            {
+                                Console.ForegroundColor = ConsoleColor.Red;
+                                Console.WriteLine("Матрица пуста!");
+                                Console.ResetColor();
+                            }
+
+                            else
+                            {
+                                Console.ForegroundColor = ConsoleColor.Yellow;
+                                PrintMenuForMakeArray();
+                                Console.ResetColor();
+                                check = GetInt("", "Такой функции не существует", 1, 4);
+                                switch (check)
+                                {
+                                    case 1: table = MakeTableConsole(ref strings, ref columns); break;
+                                    case 2: table = MakeTableRandom(ref strings, ref columns); break;
+                                    case 3: break;
+                                }
+                            }
+                            break;
+                        }
+                    case 2:
+                        {
+                            Console.ForegroundColor = ConsoleColor.Yellow;
+                            PrintTable(ref table, ref strings, ref columns);
+                            Console.ResetColor();
+                            break;
+                        }
+                    case 3: table = DeleteColumnOfMin(ref table, ref strings, ref columns); break;
+                }
+            } while (check < 4);
+        }
+        #endregion
+
+        #region Строки
+        static void PrintMenuForString()
+        {
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.WriteLine("-----------------------------------------------------");
+            Console.WriteLine("1. Создать строку");
+            Console.WriteLine("2. Напечатать строку или строковый массив");
+            Console.WriteLine("3. Поменять местами первое и последнее слово в строке");
+            Console.WriteLine("4. Назад");
+            Console.WriteLine("-----------------------------------------------------");
+            Console.ResetColor();
+        }
+        static void PrintMenuForMakeStrings()
+        {
+            Console.WriteLine("---------------------------");
+            Console.WriteLine("1. Создать строку вручную");
+            Console.WriteLine("2. Создать строковый массив");
+            Console.WriteLine("3. Назад");
+            Console.WriteLine("---------------------------");
+        }
+        static string[] MakeStringArray(ref int sizeOfArray)
+        {
+            string enterString;
+            int i;
+            string[] stringArray = new string[sizeOfArray];
+            for (i = 0; i < sizeOfArray; i++)
+            {
+                enterString = GetString($"Введите {i + 1}-ое предложение массива: ");
+                stringArray[i] = enterString;
+            }
+            return stringArray;
+        }
+        static string[] MakeString()
+        {
+            string enterString;
+            string[] stringArray = new string[1];
+            enterString = GetString("Введите строку: ");
+            stringArray[0] = enterString;
+            return stringArray;
+        }
+        static bool IsEmpty(ref string[] stringArray)
+        {
+            if (stringArray == null || stringArray.Length == 0) return true;
+            else return false;
+        }
+        static void PrintString(ref string[] stringArray)
+        {
+            bool isEmpty;
+            isEmpty = IsEmpty(ref stringArray);
+            if (isEmpty)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("Массив пуст!");
+                Console.ResetColor();
+            }
+            else
+            {
+                int i;
+                for (i = 0; i < stringArray.Length; i++)
+                {
+                    if (stringArray.Length == 1) Console.WriteLine(stringArray[i]);
+                    else Console.WriteLine($"{i + 1}. {stringArray[i]}");
+                }
+            }
+        }
+        static int FindLengthFirstWord(string workString)
+        {
+            int i;
+            int lengthFirstWord = 0;
+            string sepString = " !@#$%^&*()_+-:;<>.,?/|[]{}";
+            for (i = 0; i < workString.Length; i++)
+            {
+                if (sepString.Contains(workString[i]))
+                {
+                    lengthFirstWord = i + 1;
+                    break;
+                }
+            }
+            return lengthFirstWord;
+        }
+        static int FindLengthLastWord(string workString)
+        {
+            int i;
+            int lengthLastWord = 0;
+            string sepString = " !@#$%^&*()_+-:;<>.,?/|[]{}";
+            for (i = workString.Length - 2; i > -1; i--)
+            {
+                if (sepString.Contains(workString[i]))
+                {
+                    lengthLastWord = workString.Length - i - 1;
+                    break;
+                }
+            }
+            return lengthLastWord;
+        }
+        static string PermutationOfWords(string workString)
+        {
+            string sepString = " !@#$%^&*()_+-:;<>.,?/|[]{}";
+            int i;
+            int countOfSep = 0;
+            for (i = 0; i < workString.Length - 1; i++)
+            {
+                if (sepString.Contains(workString[i])) countOfSep++;
+            }
+            if (workString.Length == 0)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("Строка пуста!");
+                Console.ResetColor();
+            }
+            else if (countOfSep == 0)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("В предложении нет разделителей между словами. Обмен невозможен!");
+                Console.ResetColor();
+            }
+            else
+            {
+                int lengthFirstWord, lengthLastWord;
+                string newString, firstWord, lastWord, middleString;
+
+                lengthFirstWord = FindLengthFirstWord(workString);
+                lengthLastWord = FindLengthLastWord(workString);
+                firstWord = workString.Substring(0, lengthFirstWord - 1);
+                lastWord = workString.Substring(workString.Length - lengthLastWord, lengthLastWord - 1);
+                middleString = workString.Substring(lengthFirstWord - 1, workString.Length - lengthFirstWord - lengthLastWord + 1);
+                newString = lastWord + middleString + firstWord + workString[workString.Length - 1];
+                workString = newString;
+
+                Console.WriteLine("Получена строка: ");
+                Console.WriteLine(workString);
+            }
+            return workString;
+        }
+        static void DoMenuForString()
+        {
+            int check;
+            int sizeOfArray = 0;
+            ref int sizeOfArrayRef = ref sizeOfArray;
+            string[] stringArray = null;
+            ref string[] stringArrayRef = ref stringArray;
+            do
+            {
+                PrintMenuForString();
+                check = GetInt("", "Такой функции не существует", 1, 4);
+                switch (check)
+                {
+                    case 1:
+                        {
+                            Console.ForegroundColor = ConsoleColor.Yellow;
+                            PrintMenuForMakeStrings();
+                            Console.ResetColor();
+                            check = GetInt("", "Такой функции не существует", 1, 3);
+                            switch (check)
+                            {
+                                case 1: stringArray = MakeString(); break;
+                                case 2:
+                                    {
+                                        sizeOfArray = GetInt("Введите количество строк, которые вы хотите создать: ", "Создание массива такой длины не предусмотрено", 0, 10);
+                                        if (sizeOfArray == 0)
+                                        {
+                                            Console.ForegroundColor = ConsoleColor.Red;
+                                            Console.WriteLine("Массив пуст!");
+                                            Console.ResetColor();
+                                        }
+                                        else stringArray = MakeStringArray(ref sizeOfArray);
+                                        break;
+                                    }
+                                case 3: break;
+                            }
+                            break;
+                        }
+                    case 2:
+                        {
+                            Console.ForegroundColor = ConsoleColor.Yellow;
+                            PrintString(ref stringArray);
+                            Console.ResetColor();
+                            break;
+                        }
+                    case 3:
+                        {
+                            bool isEmpty;
+                            isEmpty = IsEmpty(ref stringArray);
+                            if (isEmpty)
+                            {
+                                Console.ForegroundColor = ConsoleColor.Red;
+                                Console.WriteLine("Строка пуста!");
+                                Console.ResetColor();
+                            }
+                            else
+                            {
+                                int numberOfString = 1;
+                                if (stringArray.Length != 1)
+                                {
+                                    numberOfString = GetInt("Введите номер строки, с которой желаете работать: ", "Такой строки нет", 1, sizeOfArray);
+                                }
+                                PermutationOfWords(stringArray[numberOfString - 1]);
+                            }
+                            break;
+                        }
+                }
+            } while (check < 4);
+        }
+
+        #endregion
+        static void Main(string[] args)
+        {
+            //DoMenuForTable();
+            DoMenuForString();
+        }
+    }
+}
